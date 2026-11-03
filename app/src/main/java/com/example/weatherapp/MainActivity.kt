@@ -80,6 +80,7 @@ fun WeatherScreen() {
     var rating by remember { mutableStateOf(3) }
     var comment by remember { mutableStateOf("")}
     var feedbackResult by remember { mutableStateOf("") }
+    var feedbackLoading by remember { mutableStateOf(false) }
 
     var recentSearches by remember { mutableStateOf(listOf<String>()) }
 
@@ -122,7 +123,7 @@ fun WeatherScreen() {
                     // 4. On the Submit Feedback Button: add enabled = !feedbackLoading,
                     //    and swap its Text to "Submitting..." while feedbackLoading is true
 
-
+                    feedbackLoading = true
                     scope.launch {
                         try {
                             val response = withContext(Dispatchers.IO) {
@@ -175,6 +176,7 @@ fun WeatherScreen() {
                             // Reset the loading state after the request
                             //finally always runs - success, HTTP error, or exception
                             isLoading = false
+                            feedbackLoading = false
                         }
 
                     }
@@ -209,7 +211,7 @@ fun WeatherScreen() {
             humidityResult, fontSize = 18.sp, modifier = Modifier.padding(top =8.dp),
 
             )
-        // Cache control + recent seaches
+        // Cache control + recent searches
         OutlinedButton(onClick = {
             RetrofitClient.clearCache()
             Toast.makeText(context, "Cache cleared", Toast.LENGTH_SHORT).show()
@@ -294,9 +296,11 @@ fun WeatherScreen() {
             },
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(top = 8.dp)
+                .padding(top = 8.dp),
+
+            !feedbackLoading
         ) {
-            Text("Submit Feedback")
+            Text(if (feedbackLoading) "Submitting" else "Submit Feedback")
         }
         Text(
             feedbackResult, fontSize = 18.sp, modifier = Modifier.padding(top = 8.dp)
